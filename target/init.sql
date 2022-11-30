@@ -12,4 +12,4 @@ CREATE TABLE users (
     password VARCHAR(72) NOT NULL,
     email VARCHAR(30) NOT NULL
 );
-INSERT INTO users (username, password, email) VALUES ('bmdyy', '$2a$12$rO4AtoGODYaXVOgto5ADa.kfN.kiOYMnW9grfpKl283jrfoIK2Mji', 'bmdyy@evil.com');
+INSERT INTO users (username, password, email) VALUES ('bmdyy', '$2a$12$HEXnjRPQxxSLVrdUSf7d6.uHn2LZt4vyZ2CN66L/qI177ovoHea66', 'bmdyy@evil.com');
