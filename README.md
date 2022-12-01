@@ -1,11 +1,12 @@
 # Faster (Boolean) Blind SQLi
 
-- [https://aircconline.com/csit/papers/vol10/csit101909.pdf](https://aircconline.com/csit/papers/vol10/csit101909.pdf)
+Inspired by this [paper](https://aircconline.com/csit/papers/vol10/csit101909.pdf) by Ruben Ventura. Watch my [YouTube Video]()
 
-\<link to YT video>
+Data: [Google Sheets](https://docs.google.com/spreadsheets/d/1FdOYCAtdOS3T62VdZSJWqQMLSwO-H0sDMOxKyOotkRc/edit?usp=sharing)
+- *Server:* HP Elitebook (**RAM: 32GB, CPU: Intel i7 vPro 8th Gen**) running **MariaDB + Apache2** on **local network**
+- *Attacker:* PC (**RAM: 16GB, CPU: AMD Ryzen 7 5800X**)
 
-<!-- python3 dump.py 5 | grep -Eo '[0-9].[0-9]{6}' | tr '\n' '\t' | xc -->
-
+Example output:
 ```bash
 kali@kali$ python3 dump.py 12
 [+] Oracle verified

