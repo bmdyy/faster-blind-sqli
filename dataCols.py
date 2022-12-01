@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# William Moody (@bmdyy)
+# 30.11.2022
+
 for i in range(40):
 	l = 2 + 20*i
 	h = 21 + 20*i
