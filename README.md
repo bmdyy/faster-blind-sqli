@@ -11,13 +11,6 @@ Example output:
 kali@kali$ python3 dump.py 12
 [+] Oracle verified
 
---- ITERATIVE ---
-[+] $2a$12$HEXnjRPQxxSLVrdUSf7d6.uHn2LZt4vyZ2CN66L/qI177ovoHea66
-
-[*] Total number of requests: 4827
-[*] Average requests per char: 80.450
-[*] Time elapsed: 4.129857 seconds
-
 --- BISECTION ---
 [+] $2a$12$HEXnjRPQxxSLVrdUSf7d6.uHn2LZt4vyZ2CN66L/qI177ovoHea66
 

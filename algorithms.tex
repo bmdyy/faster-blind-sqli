@@ -1,0 +1,52 @@
+\documentclass{article}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\begin{document}
+
+\begin{algorithm}
+\caption{Bisection}
+\begin{algorithmic}[1]
+    \Require{An 'oracle' function $O$ which can evaluate arbitary SQL queries}
+    \Procedure{Bisection}{}
+    \State $p \leftarrow ""$
+    \For{$i \in \left[1,60\right]$}
+        \State $l \leftarrow 0$
+        \State $h \leftarrow 127$
+        \While{$l \leq h$}
+            \State $m \leftarrow \lfloor\frac{l + h}{2}\rfloor$
+            \If{$O($\texttt{'ASCII(MID(password,$i$,1)) BETWEEN $l$ AND $m$\texttt{'}$)$}}
+                \State $h \leftarrow m - 1$
+            \Else
+                \State $l \leftarrow m + 1$
+            \EndIf
+        \EndWhile
+        \State $p \leftarrow p + l$ \Comment Convert $l$ to char
+    \EndFor
+    \State \Return $p$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}   
+
+\begin{algorithm}
+\caption{SQL-Anding}
+\begin{algorithmic}[1]
+    \Require{An 'oracle' function $O$ which can evaluate arbitary SQL queries}
+    \Procedure{SqlAnding}{}
+    \State $p \leftarrow ""$
+    \For{$i \in \left[1,60\right]$}
+        \State $c \leftarrow 0$
+        \For{$j \in \left[0,6\right]$}
+            \If{$O($\texttt{'ASCII(MID(password,$i$,1)) \& $2^j$\texttt{'}$)$}}
+                \State $c \leftarrow c + j$
+            \EndIf
+        \EndFor
+        \State $p \leftarrow p + c$ \Comment Convert $c$ to char
+    \EndFor
+    \State \Return $p$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}   
+
+\end{document}
