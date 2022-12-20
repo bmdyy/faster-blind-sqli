@@ -1,6 +1,6 @@
 # Faster (Boolean) Blind SQLi
 
-Inspired by this [paper](https://aircconline.com/csit/papers/vol10/csit101909.pdf) by Ruben Ventura. Watch my [YouTube Video]()
+Inspired by this [paper](https://aircconline.com/csit/papers/vol10/csit101909.pdf) by Ruben Ventura. Watch my [YouTube Video](https://www.youtube.com/watch?v=zRBFpCvx1uM)
 
 Data: [Google Sheets](https://docs.google.com/spreadsheets/d/1FdOYCAtdOS3T62VdZSJWqQMLSwO-H0sDMOxKyOotkRc/edit?usp=sharing)
 - *Server:* HP Elitebook (**RAM: 32GB, CPU: Intel i7 vPro 8th Gen**) running **MariaDB + Apache2** on **local network**
